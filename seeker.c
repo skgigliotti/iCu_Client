@@ -21,7 +21,10 @@
 int connect2v4stream(){
 	struct sockaddr_in server;
 	int sockd, ret;
-	char *message = "GET http://pilot.westmont.edu:28900/?i=tleslie&uptime=60 HTTP/1.0\r\n\r\n";
+	char *message = "GET /?i=tleslie&uptime=60 HTTP/1.1\r\n"  //make sure to remove the hard-coded stuff
+			"Host: pilot.westmont.edu:28900\r\n\r\n";
+
+	printf("%s\n", message);
 
 	sockd = socket(AF_INET,SOCK_STREAM,0);
 	if(sockd == -1){
@@ -43,17 +46,14 @@ int connect2v4stream(){
 		exit(errno);
 	}
 
-	ret = write(sockd, (void *) message, sizeof(message));
+	ret = write(sockd, message, strlen(message));
 	if(ret == -1){
 		printf("%s\n", strerror(errno));
 		exit(errno);
 	}
 
-	close(sockd);
-
 	return sockd;
 }
-
 
 /*
  * receives the messages from the server and prints them on the screen
