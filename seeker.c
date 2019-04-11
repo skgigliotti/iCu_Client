@@ -21,6 +21,7 @@
 int connect2v4stream(){
 	struct sockaddr_in server;
 	int sockd, ret;
+	char *message = "GET http://pilot.westmont.edu:28900/?i=tleslie&uptime=60 HTTP/1.0\r\n\r\n";
 
 	sockd = socket(AF_INET,SOCK_STREAM,0);
 	if(sockd == -1){
@@ -42,8 +43,17 @@ int connect2v4stream(){
 		exit(errno);
 	}
 
+	ret = write(sockd, (void *) message, sizeof(message));
+	if(ret == -1){
+		printf("%s\n", strerror(errno));
+		exit(errno);
+	}
+
+	close(sockd);
+
 	return sockd;
 }
+
 
 /*
  * receives the messages from the server and prints them on the screen
@@ -56,7 +66,6 @@ int recvandprint(int fd, WINDOW * win, char * buffer, int maxy){
 
 	if(ret == -1){
 		if(errno == EAGAIN){
-			clearscr(win, maxy);
 			wprintw(win, "%s", buffer);
 			wrefresh(win);
 			recvandprint(fd, win, buffer, maxy);
@@ -89,6 +98,20 @@ char * getuser(int fd){
 }
 
 int main(){
+
+	struct timeval t1, t2;
+	double elapsed;
+	gettimeofday(&t1,NULL);
+	t1.tv_sec; // seconds
+	gettimeofday(&t2, NULL);
+	elapsed = t2.tv_sec - t1.tv_sec;
+	if( elapsed%60 == 0){
+		//send update to server
+	}
+
+
+
+
 	int fd, sret, counter, maxy, maxx;
 	char c, *name, buffer[BUFSIZE], sendbuf[BUFSIZE];
 	struct timeval timev;
