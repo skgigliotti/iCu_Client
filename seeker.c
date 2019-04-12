@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <ncurses.h>
 
-#define SERVER "10.115.20.250"
-#define PORT 28900
+#define server "10.115.20.250"
+#define port 28900
 
 
 /*
@@ -21,20 +21,20 @@
 int connect2v4stream(){
 	struct sockaddr_in server;
 	int sockd, ret;
-	char *message = "GET /?i=tleslie&uptime=60 HTTP/1.1\r\n"  //make sure to remove the hard-coded stuff
-			"Host: pilot.westmont.edu:28900\r\n\r\n";
+	char *message = "get /?i=tleslie&uptime=60 http/1.1\r\n"  //make sure to remove the hard-coded stuff
+			"host: pilot.westmont.edu:28900\r\n\r\n";
 
 	printf("%s\n", message);
 
-	sockd = socket(AF_INET,SOCK_STREAM,0);
+	sockd = socket(af_inet,sock_stream,0);
 	if(sockd == -1){
 		printf("%s\n", strerror(errno));
 		exit(errno);
 	}
-	server.sin_family = AF_INET;
-	server.sin_port = htons(PORT); //converts port number
+	server.sin_family = af_inet;
+	server.sin_port = htons(port); //converts port number
 
-	ret = inet_pton(AF_INET, SERVER, &server.sin_addr);
+	ret = inet_pton(af_inet, server, &server.sin_addr);
  	if(ret == -1){
  		printf("%s\n", strerror(errno));
  		exit(errno);
