@@ -26,6 +26,7 @@ int connect2v4stream(char *IP_adr){
 	sockd = socket(AF_INET,SOCK_STREAM,0);
 	if(sockd == -1){
 		printf("%s\n", strerror(errno));
+		return sockd;
 	}
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT); //converts port number
@@ -33,11 +34,13 @@ int connect2v4stream(char *IP_adr){
 	ret = inet_pton(AF_INET, IP_adr, &server.sin_addr);
  	if(ret == -1){
  		printf("%s\n", strerror(errno));
+ 		return sockd;
  	}
 
  	ret = connect(sockd, (struct sockaddr *)&server, sizeof(server));
 	if(ret == -1){
 		printf("%s\n", strerror(errno));
+		return sockd;
 	}
 
 	return sockd;
@@ -55,14 +58,57 @@ void update_time(int sockd){
 	}
 }
 
+char * increase_IP(char *IP_adr){
+
+
+	return IP_adr;
+}
+
+void attack(char *IP_adr, char *user, int sockd){
+	int ret, foo;
+	char *message;
+	char *rdmsg;
+
+	rdmsg = malloc(500 * sizeof(char));
+
+	message = "Who are you?\n";
+	ret = connect2v4stream(IP_adr);
+	if(ret >= 0){
+		write(ret, message, strlen(message));
+		foo = read(ret, rdmsg, 500);
+		if(foo == -1){
+			printf("Error: %s\n", strerror(errno));
+			exit(errno);
+		}
+
+		printf("%s\n", rdmsg);
+
+//		char *victim = strtok(message, " ");
+//		char *location = strtok(NULL, " ");
+//		message = "GET /?i=%s&u=%s&where=%s\r\n"
+//				  "Host: pilot.westmont.edu:28900\r\n\r\n", user, victim, location;
+//		write(sockd, message, strlen(message));
+	}
+}
+
 int main(){
 	int sockd;
 	struct timeval timev;
 	fd_set readfds;
+	char *user;
+
+
+	user = "tleslie";  //change this to be an argument from the command line
 
 	sockd = connect2v4stream(SERVER);
 
-	update_time(sockd);
+	//FOR TESTING
+	char *vostro_IP;
+	vostro_IP = "10.20.43.234";
+	attack(vostro_IP, user, sockd);
+	//FOR TESTING
+
+	//update_time(sockd);
 
 	//prepares select
 	setsockopt(sockd, SOL_SOCKET, SO_RCVTIMEO, &timev, sizeof(timev));
@@ -77,3 +123,4 @@ int main(){
 
 	close(sockd);
 }
+
