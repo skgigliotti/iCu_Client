@@ -14,10 +14,41 @@
 #define SERVER "10.115.20.250"
 #define PORT 28900
 
+
+/*
+ * Help from this site: https://www.geeksforgeeks.org/socket-programming-cc/
+ */
+void make_socket(){
+    struct sockaddr_in address;
+    socklen_t address_len;
+    int ret;
+
+    address_len = sizeof(struct sockaddr_in);
+
+
+	int serverfd = socket(AF_INET, SOCK_STREAM, 0);
+
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
+
+    ret = bind(serverfd, (struct sockaddr *)&address, sizeof(address));
+    if(ret == -1){
+   		printf("%s\n", strerror(errno));
+   	}
+	ret = listen(serverfd, 3);
+	if(ret == -1){
+ 		printf("%s\n", strerror(errno));
+ 	}
+	int new_socket = accept(serverfd, (struct sockaddr *)&address, &address_len);
+	char *found_msg = "tleslie AccessPoint";
+	write(new_socket, found_msg, strlen(found_msg));
+	close(serverfd);
+}
+
 /*
  * connects to the server and prints errors if any is encountered
- *
- * the error handling needs to be changed because we will be expecting many errors when trying to connect
  */
 int connect2v4stream(char *IP_adr){
 	struct sockaddr_in server;
@@ -56,6 +87,7 @@ void update_time(int sockd){
 		printf("%s\n", strerror(errno));
 		exit(errno);
 	}
+	return;
 }
 
 char * increase_IP(char *IP_adr){
@@ -83,12 +115,15 @@ void attack(char *IP_adr, char *user, int sockd){
 
 		printf("%s\n", rdmsg);
 
-//		char *victim = strtok(message, " ");
-//		char *location = strtok(NULL, " ");
-//		message = "GET /?i=%s&u=%s&where=%s\r\n"
-//				  "Host: pilot.westmont.edu:28900\r\n\r\n", user, victim, location;
-//		write(sockd, message, strlen(message));
+		char *victim = strtok(message, " ");
+		char *location = strtok(NULL, " ");
+		message = "GET /?i=%s&u=%s&where=%s\r\n"
+				  "Host: pilot.westmont.edu:28900\r\n\r\n", user, victim, location;
+		write(sockd, message, strlen(message));
 	}
+
+	increase_IP(IP_adr);
+	return;
 }
 
 int main(){
@@ -102,11 +137,14 @@ int main(){
 
 	sockd = connect2v4stream(SERVER);
 
-	//FOR TESTING
-	char *vostro_IP;
-	vostro_IP = "10.20.43.234";
-	attack(vostro_IP, user, sockd);
-	//FOR TESTING
+
+//	//FOR TESTING
+	make_socket();
+
+//	char *vostro_IP;
+//	vostro_IP = "10.20.43.234";
+//	attack(vostro_IP, user, sockd);
+//	//FOR TESTING
 
 	//update_time(sockd);
 
