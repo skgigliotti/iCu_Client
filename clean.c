@@ -21,13 +21,17 @@
 void make_socket(){
     struct sockaddr_in address;
     socklen_t address_len;
-    int ret;
+    int ret, opt =1;
 
     address_len = sizeof(struct sockaddr_in);
 
 
 	int serverfd = socket(AF_INET, SOCK_STREAM, 0);
 
+	ret = setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+	if(ret == -1){
+   		printf("%s\n", strerror(errno));
+	}
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -43,6 +47,8 @@ void make_socket(){
  	}
 	int new_socket = accept(serverfd, (struct sockaddr *)&address, &address_len);
 	char *found_msg = "tleslie AccessPoint";
+	char *foo = malloc(1000);
+	read(new_socket, foo, 1000);
 	write(new_socket, found_msg, strlen(found_msg));
 	close(serverfd);
 }
@@ -143,7 +149,7 @@ int main(){
 
 //	char *vostro_IP;
 //	vostro_IP = "10.20.43.234";
-//	attack(vostro_IP, user, sockd);
+//	attack("64.136.178.142", user, sockd);
 //	//FOR TESTING
 
 	//update_time(sockd);
