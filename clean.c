@@ -30,6 +30,7 @@ void make_socket(char *user){
 	int serverfd = socket(AF_INET, SOCK_STREAM, 0);
 
 
+
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(PORT);
@@ -204,4 +205,3 @@ int main(){
 
 	close(sockd);
 }
-
