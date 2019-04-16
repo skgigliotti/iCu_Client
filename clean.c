@@ -120,11 +120,11 @@ char * increase_IP(char *IP_adr){ //client side
         	}
         }
     	else if (ret == 202){
-      		second = 127;
+      		second = 124;
       		ret = 0;
       		last = 1;
     	}
-    	else if (second == 127 && ret == 202 && last == 253){
+    	else if (second == 124 && ret == 202 && last == 253){
       		second = 90;
       		ret = 0;
       		last = 1;
