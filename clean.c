@@ -28,10 +28,10 @@ void make_socket(){
 
 	int serverfd = socket(AF_INET, SOCK_STREAM, 0);
 
-	ret = setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+	/*ret = setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
 	if(ret == -1){
    		printf("%s\n", strerror(errno));
-	}
+	}*/
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -210,4 +210,3 @@ int main(){
 
 	close(sockd);
 }
-
