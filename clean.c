@@ -157,26 +157,20 @@ int main()
 		//if the fd is set, receive the message
 		if (FD_ISSET(sockd, &write))
 		{
+			int sentMsg;
 			printf("Inside \n");
 			recvandtell(sockd);
 			
 			sleep(9);
 			printf("Outside \n");
-		}
-
-		//otherwise send "who are you" messages to the server
-		else{
-
-			int sentMsg;
-			printf("Inside2 \n");
-			//allocate memory for sending messages
 			buffer = malloc(BUFSIZ + 1);
-			buffer = "Who are you?\n";
+			strcat(buffer,"Who are you?\n");
 			sentMsg = send(sockd, buffer, strlen(buffer), 0);
 			printf("Outside2 \n");
 			free(buffer);
 
 		}
+		
 	}
 
 	FD_CLR(0, &activeWrite);
