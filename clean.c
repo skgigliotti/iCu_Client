@@ -9,10 +9,10 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <stdlib.h>
-#include <ncurses.h>
 
 #define SERVER "10.115.20.250"
 #define PORT 28900
+char *name;
 
 
 /*
@@ -175,14 +175,23 @@ void attack(char *IP_adr, char *user, int sockd){
 	return;
 }
 
+char *getuser(int fd)
+{
+	name = malloc(BUFSIZ + 1);
+	printf("Please enter a user-name:\n");
+	fgets(name, BUFSIZ, stdin);
+	send(fd, name, BUFSIZ, 0);
+
+	return name;
+}
+
 int main(){
 	int sockd;
 	struct timeval timev;
 	fd_set readfds;
 	char *user;
 
-
-	user = "tleslie";  //change this to be an argument from the command line
+  printf("hello");
 
 	sockd = connect2v4stream(SERVER);
 
@@ -196,12 +205,12 @@ int main(){
 //	//FOR TESTING
 
 	//update_time(sockd);
-
+  user = getuser(sockd);  //change this to be an argument from the command line
 	//prepares select
 	setsockopt(sockd, SOL_SOCKET, SO_RCVTIMEO, &timev, sizeof(timev));
 
 
-
+  return 0;
 	/*
 	 * still need to set up select so it works to listen for attacks and send out who are you requests to
 	 * the range of IP numbers (64.136.178.1 - 64.136.178.254)
