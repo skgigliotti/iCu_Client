@@ -15,6 +15,7 @@
 #define PORT 28900
 #define BUFSIZE = 1000;
 #define NAMESIZE = 1000;
+#define CMD 'mycmd';
 char *name;
 char *accesspoint;
 char *buffer;
