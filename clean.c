@@ -15,11 +15,12 @@
 #define PORT 28900
 #define DEFAULT_IP "10.90.1.1"
 
+char * name, * accesspoint;
 
 /*
  * Help from this site: https://www.geeksforgeeks.org/socket-programming-cc/
  */
-void make_socket(char *user){
+void make_socket(){ //server side
     struct sockaddr_in address;
     socklen_t address_len;
     int ret;
@@ -44,7 +45,10 @@ void make_socket(char *user){
  		printf("%s\n", strerror(errno));
  	}
 	int new_socket = accept(serverfd, (struct sockaddr *)&address, &address_len);
-	char *found_msg = "tleslie AccessPoint";
+	char *found_msg = name;
+	strcat(found_msg, " ");
+	strcat(found_msg, accesspoint);
+	strcat(found_msg, "\n");
 	char *foo = malloc(1000);
 	read(new_socket, foo, 1000);
 	write(new_socket, found_msg, strlen(found_msg));
@@ -54,7 +58,7 @@ void make_socket(char *user){
 /*
  * connects to the server and prints errors if any is encountered
  */
-int connect2v4stream(char *IP_adr){
+int connect2v4stream(char *IP_adr){ //both
 	struct sockaddr_in server;
 	int sockd, ret;
 
@@ -81,10 +85,10 @@ int connect2v4stream(char *IP_adr){
 	return sockd;
 }
 
-void update_time(int sockd){
+void update_time(int sockd){ //either
 	int ret;
-	char *message = "GET /?i=tleslie&uptime=60 HTTP/1.1\r\n"  //make sure to remove the hard-coded stuff
-				    "Host: pilot.westmont.edu:28900\r\n\r\n";
+	char *message;
+	sprintf(message, "GET /?i=%s&uptime=60 HTTP/1.1\r\nHost: pilot.westmont.edu:28900\r\n\r\n", name);
 
 	ret = write(sockd, message, strlen(message));
 	if(ret == -1){
@@ -94,7 +98,7 @@ void update_time(int sockd){
 	return;
 }
 
-char * increase_IP(char *IP_adr){
+char * increase_IP(char *IP_adr){ //client side
 	char str[20];
 	int ret;
 	int last;
@@ -143,7 +147,7 @@ char * increase_IP(char *IP_adr){
 	return scan;
 }
 
-void attack(char *IP_adr, char *user, int sockd){
+void attack(char *IP_adr, int sockd){ //client side
 	int ret, foo;
 	char *message;
 	char *rdmsg;
@@ -155,9 +159,8 @@ void attack(char *IP_adr, char *user, int sockd){
 	if(ret >= 0){
 		write(ret, message, strlen(message));
 		foo = read(ret, rdmsg, 500);
-		if(foo == -1){
+		if( foo == -1 ){
 			printf("Error: %s\n", strerror(errno));
-			exit(errno);
 		}
 
 		printf("%s\n", rdmsg);
@@ -165,38 +168,57 @@ void attack(char *IP_adr, char *user, int sockd){
 		char *victim = strtok(message, " ");
 		char *location = strtok(NULL, " ");
 		sprintf(message,"GET /?i=%s&u=%s&where=%s\r\n"
-				        "Host: pilot.westmont.edu:28900\r\n\r\n", user, victim, location );
+				        "Host: pilot.westmont.edu:28900\r\n\r\n", name, victim, location );
 		write(sockd, message, strlen(message));
 	}
 
 	return;
 }
 
+char *getap() //server side
+{
+	accesspoint = "34:85:84:0e:6e:e5"; //"vl-1a-wap3\n";
+
+	return accesspoint;
+}
+
+char *getuser() //both
+{
+	name = malloc(BUFSIZ + 1);
+	printf("Please enter a user-name:\n");
+	fgets(name, BUFSIZ, stdin);
+
+	return name;
+}
+
+
 int main(){
 	int sockd;
-	char *user, *IP_addr;
+	char *IP_addr;
 	struct timeval start, now;
 	double elapsed;
+
+	sockd = connect2v4stream(SERVER);
+
+	getuser();  //change this to be an argument from the command line
+
+	getap();
 
 	IP_addr = DEFAULT_IP;
 
 	gettimeofday(&start,NULL);
 
-	user = "tleslie";  //change this to be an argument from the command line
-
-	sockd = connect2v4stream(SERVER);
-
-	if(fork() == 0){ //server side
+	if( fork() == 0 ){ //server side
 		while(1){
-			make_socket(user);
+			make_socket();
 		}
 	}else{ //client side
 		while(1){
-			attack(IP_addr, user, sockd);       //try to attack the IP
+			attack(IP_addr,sockd);       //try to attack the IP
 			IP_addr = increase_IP(IP_addr);     //increase the IP
 			gettimeofday(&now, NULL);           //update time if needed
 			elapsed = now.tv_sec - start.tv_sec;
-			if( ((int) elapsed)%60 == 0){
+			if( ((int) elapsed) % 60 == 0 ){
 				update_time(sockd);
 			}
 		}
@@ -204,4 +226,6 @@ int main(){
 
 
 	close(sockd);
+	return 0;
 }
+
