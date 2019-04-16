@@ -15,7 +15,11 @@
 #define PORT 28900
 #define BUFSIZE = 1000;
 #define NAMESIZE = 1000;
+<<<<<<< HEAD
 #define CMD 'mycmd';
+=======
+
+>>>>>>> f19d6c74a3d40fac96d89fb13791ac2a7e21a31a
 char *name;
 char *accesspoint;
 char *buffer;
@@ -71,9 +75,13 @@ char *getuser(int fd)
  */
 char *getap()
 {
-	accesspoint = malloc(BUFSIZ + 1);
-	accesspoint = "vl-1a-wap3\n";
+	//accesspoint = malloc(BUFSIZ + 1);
+	accesspoint = "netsh wlan show interfaces  | grep BSSID | awk  '{print $3}'"; //"vl-1a-wap3\n";
+  FILE *mycmd = popen(accesspoint, "r");
+  char buf[256];
+  fgets(buf, sizeof(buf), mycmd);
 
+pclose(mycmd);
 	return accesspoint;
 }
 
@@ -92,7 +100,7 @@ int recvandtell(int fd)
 	}
 	else if (ret == 0)
 	{
-		
+
 	}
 	else
 	{
@@ -126,7 +134,7 @@ int main()
 {
 	int sockd;
 	int s;
-	
+
 	sockd = connect2v4stream(SERVER);
 
 	getuser(sockd);
@@ -137,7 +145,7 @@ int main()
 	fd_set write, activeWrite;
 	struct timeval time;
 	int quit = 0;
-
+  printf(getap());
 	//set time for select to switch after 1 second
 	//so that messages can be received in real time
 	//Set up recv timeout for .5 sec
@@ -161,7 +169,7 @@ int main()
 			int sentMsg;
 			printf("Inside \n");
 			recvandtell(sockd);
-			
+
 			sleep(9);
 			printf("Outside \n");
 			buffer = malloc(BUFSIZ + 1);
@@ -171,12 +179,12 @@ int main()
 			free(buffer);
 
 		}
-		
+
 	}
 
 	FD_CLR(0, &activeWrite);
 
-	
+
 	/*
 	 * still need to set up select so it works to listen for attacks and send out who are you requests to
 	 * the range of IP numbers (64.136.178.1 - 64.136.178.254)
