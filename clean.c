@@ -177,7 +177,7 @@ int main(){
 	char *user;
 
 
-	user = "tleslie";  //change this to be an argument from the command line
+	user = "sgigliotti";  //change this to be an argument from the command line
 
 	sockd = connect2v4stream(SERVER);
 
