@@ -14,6 +14,9 @@
 #define SERVER "10.115.20.250"
 #define PORT 28900
 
+char *name;
+char *accesspoint;
+
 
 /*
  * Help from this site: https://www.geeksforgeeks.org/socket-programming-cc/
@@ -21,17 +24,13 @@
 void make_socket(){
     struct sockaddr_in address;
     socklen_t address_len;
-    int ret, opt =1;
+    int ret;
 
     address_len = sizeof(struct sockaddr_in);
 
 
 	int serverfd = socket(AF_INET, SOCK_STREAM, 0);
 
-	ret = setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
-	if(ret == -1){
-   		printf("%s\n", strerror(errno));
-	}
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -46,7 +45,9 @@ void make_socket(){
  		printf("%s\n", strerror(errno));
  	}
 	int new_socket = accept(serverfd, (struct sockaddr *)&address, &address_len);
-	char *found_msg = "tleslie AccessPoint";
+	char *found_msg = name;
+	strcat(found_msg, " ");
+	strcat(found_msg, accesspoint);
 	char *foo = malloc(1000);
 	read(new_socket, foo, 1000);
 	write(new_socket, found_msg, strlen(found_msg));
@@ -175,22 +176,42 @@ void attack(char *IP_adr, char *user, int sockd){
 	return;
 }
 
+char *getap()
+{
+	accesspoint = "34:85:84:0e:6e:e5"; //"vl-1a-wap3\n";
+ 
+	return accesspoint;
+}
+
+char *getuser(int fd)
+{
+	name = malloc(BUFSIZ + 1);
+	printf("Please enter a user-name:\n");
+	fgets(name, BUFSIZ, stdin);
+	send(fd, name, BUFSIZ, 0);
+
+	return name;
+}
+
 int main(){
 	int sockd;
 	struct timeval timev;
 	fd_set readfds;
-	char *user;
-
-
-	user = "tleslie";  //change this to be an argument from the command line
+	char *user, *ap;
+	
 
 	sockd = connect2v4stream(SERVER);
 
+	user = getuser(sockd);  //change this to be an argument from the command line
+
+	ap = getap();
+
+//	char *vostro_IP;
 
 //	//FOR TESTING
 	make_socket();
 
-//	char *vostro_IP;
+
 //	vostro_IP = "10.20.43.234";
 //	attack("64.136.178.142", user, sockd);
 //	//FOR TESTING
@@ -209,5 +230,6 @@ int main(){
 
 
 	close(sockd);
+return 0;
 }
 
