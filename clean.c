@@ -13,25 +13,22 @@
 
 #define SERVER "10.115.20.250"
 #define PORT 28900
+#define DEFAULT_IP "10.90.1.1"
 
 
 /*
  * Help from this site: https://www.geeksforgeeks.org/socket-programming-cc/
  */
-void make_socket(){
+void make_socket(char *user){
     struct sockaddr_in address;
     socklen_t address_len;
-    int ret, opt =1;
+    int ret;
 
     address_len = sizeof(struct sockaddr_in);
 
 
 	int serverfd = socket(AF_INET, SOCK_STREAM, 0);
 
-	ret = setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
-	if(ret == -1){
-   		printf("%s\n", strerror(errno));
-	}
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -41,7 +38,7 @@ void make_socket(){
     if(ret == -1){
    		printf("%s\n", strerror(errno));
    	}
-	ret = listen(serverfd, 3);
+	ret = listen(serverfd, 1);
 	if(ret == -1){
  		printf("%s\n", strerror(errno));
  	}
@@ -123,9 +120,9 @@ char * increase_IP(char *IP_adr){
       		last = 1;
     	}
     	else if (second == 127 && ret == 202 && last == 253){
-      		second == 90;
-      		ret == 0;
-      		last == 1;
+      		second = 90;
+      		ret = 0;
+      		last = 1;
     	}
     	char scan[20];
     	char two[10];
@@ -166,46 +163,43 @@ void attack(char *IP_adr, char *user, int sockd){
 
 		char *victim = strtok(message, " ");
 		char *location = strtok(NULL, " ");
-		message = "GET /?i=%s&u=%s&where=%s\r\n"
-				  "Host: pilot.westmont.edu:28900\r\n\r\n", user, victim, location;
+		sprintf(message,"GET /?i=%s&u=%s&where=%s\r\n"
+				        "Host: pilot.westmont.edu:28900\r\n\r\n", user, victim, location );
 		write(sockd, message, strlen(message));
 	}
 
-	increase_IP(IP_adr);
 	return;
 }
 
 int main(){
 	int sockd;
-	struct timeval timev;
-	fd_set readfds;
-	char *user;
+	char *user, *IP_addr;
+	struct timeval start, now;
+	double elapsed;
 
+	IP_addr = DEFAULT_IP;
+
+	gettimeofday(&start,NULL);
 
 	user = "tleslie";  //change this to be an argument from the command line
 
 	sockd = connect2v4stream(SERVER);
 
-
-//	//FOR TESTING
-	make_socket();
-
-//	char *vostro_IP;
-//	vostro_IP = "10.20.43.234";
-//	attack("64.136.178.142", user, sockd);
-//	//FOR TESTING
-
-	//update_time(sockd);
-
-	//prepares select
-	setsockopt(sockd, SOL_SOCKET, SO_RCVTIMEO, &timev, sizeof(timev));
-
-
-
-	/*
-	 * still need to set up select so it works to listen for attacks and send out who are you requests to
-	 * the range of IP numbers (64.136.178.1 - 64.136.178.254)
-	 */
+	if(fork() == 0){ //server side
+		while(1){
+			make_socket(user);
+		}
+	}else{ //client side
+		while(1){
+			attack(IP_addr, user, sockd);       //try to attack the IP
+			IP_addr = increase_IP(IP_addr);     //increase the IP
+			gettimeofday(&now, NULL);           //update time if needed
+			elapsed = now.tv_sec - start.tv_sec;
+			if( ((int) elapsed)%60 == 0){
+				update_time(sockd);
+			}
+		}
+	}
 
 
 	close(sockd);
