@@ -14,10 +14,42 @@
 #define SERVER "10.115.20.250"
 #define PORT 28900
 
+
+/*
+ * Help from this site: https://www.geeksforgeeks.org/socket-programming-cc/
+ */
+void make_socket(){
+    struct sockaddr_in address;
+    socklen_t address_len;
+    int ret, opt =1;
+
+    address_len = sizeof(struct sockaddr_in);
+
+
+	int serverfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
+
+    ret = bind(serverfd, (struct sockaddr *)&address, sizeof(address));
+    if(ret == -1){
+   		printf("%s\n", strerror(errno));
+   	}
+	ret = listen(serverfd, 3);
+	if(ret == -1){
+ 		printf("%s\n", strerror(errno));
+ 	}
+	int new_socket = accept(serverfd, (struct sockaddr *)&address, &address_len);
+	char *found_msg = "tleslie AccessPoint";
+	char *foo = malloc(1000);
+	read(new_socket, foo, 1000);
+	write(new_socket, found_msg, strlen(found_msg));
+	close(serverfd);
+}
+
 /*
  * connects to the server and prints errors if any is encountered
- *
- * the error handling needs to be changed because we will be expecting many errors when trying to connect
  */
 int connect2v4stream(char *IP_adr){
 	struct sockaddr_in server;
@@ -26,6 +58,7 @@ int connect2v4stream(char *IP_adr){
 	sockd = socket(AF_INET,SOCK_STREAM,0);
 	if(sockd == -1){
 		printf("%s\n", strerror(errno));
+		return sockd;
 	}
 	server.sin_family = AF_INET;
 	server.sin_port = htons(PORT); //converts port number
@@ -33,11 +66,13 @@ int connect2v4stream(char *IP_adr){
 	ret = inet_pton(AF_INET, IP_adr, &server.sin_addr);
  	if(ret == -1){
  		printf("%s\n", strerror(errno));
+ 		return sockd;
  	}
 
  	ret = connect(sockd, (struct sockaddr *)&server, sizeof(server));
 	if(ret == -1){
 		printf("%s\n", strerror(errno));
+		return sockd;
 	}
 
 	return sockd;
@@ -53,16 +88,109 @@ void update_time(int sockd){
 		printf("%s\n", strerror(errno));
 		exit(errno);
 	}
+	return;
+}
+
+char * increase_IP(char *IP_adr){
+	char str[20];
+	int ret;
+	int last;
+	strcpy(str,IP_adr);
+	char *first = strtok(str, ".");
+	char *ipnum = strtok(NULL, ".");
+	int second = atoi(ipnum);
+	ipnum = strtok(NULL, ".");
+	ret = atoi(ipnum);
+	ipnum = strtok(NULL, ".");
+	last = atoi(ipnum);
+	if (ret >= 0 && ret < 202){
+  		if (last >= 1 && last <= 252){
+			last ++;
+		}
+		else if (last == 253){
+        		ret ++;
+        		last = 1;
+        	}
+        }
+    	else if (ret == 202){
+      		second = 127;
+      		ret = 0;
+      		last = 1;
+    	}
+    	else if (second == 127 && ret == 202 && last == 253){
+      		second == 90;
+      		ret == 0;
+      		last == 1;
+    	}
+    	char scan[20];
+    	char two[10];
+    	char three[10];
+    	char four[10];
+    	snprintf(two, 10, "%d", second);
+    	snprintf(three, 10, "%d", ret);
+    	snprintf(four, 10, "%d", last);
+    	strcat(scan,first);
+    	strcat(scan,".");
+    	strcat(scan,two);
+    	strcat(scan,".");
+    	strcat(scan,three);
+    	strcat(scan,".");
+    	strcat(scan,four);
+
+	return scan;
+}
+
+void attack(char *IP_adr, char *user, int sockd){
+	int ret, foo;
+	char *message;
+	char *rdmsg;
+
+	rdmsg = malloc(500 * sizeof(char));
+
+	message = "Who are you?\n";
+	ret = connect2v4stream(IP_adr);
+	if(ret >= 0){
+		write(ret, message, strlen(message));
+		foo = read(ret, rdmsg, 500);
+		if(foo == -1){
+			printf("Error: %s\n", strerror(errno));
+			exit(errno);
+		}
+
+		printf("%s\n", rdmsg);
+
+		char *victim = strtok(message, " ");
+		char *location = strtok(NULL, " ");
+		message = "GET /?i=%s&u=%s&where=%s\r\n"
+				  "Host: pilot.westmont.edu:28900\r\n\r\n", user, victim, location;
+		write(sockd, message, strlen(message));
+	}
+
+	increase_IP(IP_adr);
+	return;
 }
 
 int main(){
 	int sockd;
 	struct timeval timev;
 	fd_set readfds;
+	char *user;
+
+
+	user = "tleslie";  //change this to be an argument from the command line
 
 	sockd = connect2v4stream(SERVER);
 
-	update_time(sockd);
+
+//	//FOR TESTING
+	make_socket();
+
+//	char *vostro_IP;
+//	vostro_IP = "10.20.43.234";
+//	attack("64.136.178.142", user, sockd);
+//	//FOR TESTING
+
+	//update_time(sockd);
 
 	//prepares select
 	setsockopt(sockd, SOL_SOCKET, SO_RCVTIMEO, &timev, sizeof(timev));
