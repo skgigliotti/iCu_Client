@@ -177,7 +177,7 @@ int main(){
 //	printf("After: %s", IP_addr);
 
 	while(1){
-		attack(IP_addr, sockd);
+		attack(IP_addr);
 		IP_addr = increase_IP(IP_addr);
 	}
 
