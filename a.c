@@ -52,7 +52,7 @@ void make_socket(){ //server side
 
 char *getap() //server side
 {
-	accesspoint = "34:85:84:0e:6e:e5"; //"vl-1a-wap3\n";
+	accesspoint = "vl-1a-wap3"; //"vl-1a-wap3\n";
 
 	return accesspoint;
 }
