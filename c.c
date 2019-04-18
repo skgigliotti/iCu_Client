@@ -55,6 +55,7 @@ void update_time(int sockd){ //either
 		printf("%s\n", strerror(errno));
 		exit(errno);
 	}
+	free(message);
 	return;
 }
 
