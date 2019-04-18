@@ -43,9 +43,11 @@ int connect2v4stream(char *IP_adr){ //both
 	return sockd;
 }
 
-void update_time(int sockd){ //either
-	int ret;
+void update_time(){ //either
+	int ret, sockd;
 	char *message;
+
+	sockd = connect2v4stream(SERVER);
 
 	message = malloc(100);
 	sprintf(message, "GET /?i=%s&uptime=60 HTTP/1.1\r\nHost: pilot.westmont.edu:28900\r\n\r\n", name);
@@ -56,6 +58,7 @@ void update_time(int sockd){ //either
 		exit(errno);
 	}
 	free(message);
+	close(sockd);
 	return;
 }
 
@@ -73,7 +76,7 @@ int main(){
 	struct timeval start, now;
 	double elapsed;
 
-	sockd = connect2v4stream(SERVER);
+
 
 	getuser();
 
@@ -83,10 +86,11 @@ int main(){
 		gettimeofday(&now, NULL);
 		elapsed = now.tv_sec - start.tv_sec;
 		if( ((int) elapsed) % 60 == 0 ){
-			update_time(sockd);
+			update_time();
 		}
 	}
 
 
 	return 0;
 }
+

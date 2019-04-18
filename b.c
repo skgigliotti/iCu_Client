@@ -97,9 +97,10 @@ char * increase_IP(char *IP_adr){
 		ret = 0;
 		last = 1;
 	}
-	char * scan;
-	scan = malloc(20);
 
+
+	char *scan;
+	scan = malloc(20);
 	char two[10];
 	char three[10];
 	char four[10];
@@ -130,11 +131,13 @@ void attack(char *IP_adr){
 		foo = write(ret, message, strlen(message));
 		if( foo == -1 ){
 			printf("Write Error: %s\n", strerror(errno));
+			free(rdmsg);
 			return;
 		}
 		foo = read(ret, rdmsg, 500);
 		if( foo == -1 ){
 			printf("Read Error: %s\n", strerror(errno));
+			free(rdmsg);
 			return;
 		}
 
@@ -150,6 +153,7 @@ void attack(char *IP_adr){
 		close(sockd);
 	}
 
+	free(rdmsg);
 	return;
 }
 
@@ -163,7 +167,6 @@ char *getuser()
 }
 
 int main(){
-	int sockd;
 	char *IP_addr;
 
 	name = getuser();
